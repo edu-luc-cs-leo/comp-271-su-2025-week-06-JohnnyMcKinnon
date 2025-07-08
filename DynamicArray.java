@@ -42,7 +42,7 @@ public class DynamicArray {
      */
     private void resize() {
         // Create temporary array of DOUBLE the size of the underlying array
-        String[] temp = new String[2 * this.underlying.length];
+        String[] temp = new String[RESIZE_FACTOR * this.underlying.length];
         for (int i = 0; i < this.underlying.length; i++) {
             temp[i] = this.underlying[i];
         }
@@ -55,16 +55,25 @@ public class DynamicArray {
      * 
      * @param string String to add to underlying array
      */
-    public void add(String string) {
-        // Is there room in the underlying array?
+    public void add(int index, String string) {
+        if(index < 0 || index > occupancy) {
+            return; 
+//do nothing (invalid index)
+        }
         if (this.occupancy == this.underlying.length) {
-            this.resize();
+            this.resize(); 
+//resize if theres no room
         }
         // At this point there is guaranteed room in the array, either
         // because we just doubled it in size or because there was enough
         // room for one more element to begin with.
-        this.underlying[this.occupancy] = string;
+//shifts elements to the right starting from last position used down to index
+        for(int i = occupancy; i > index; i--) {
+            this.underlying[i] = underlying[i-1];
+        }
+        this.underlying[index] = string;
         this.occupancy++;
+//insert new element at index
     } // method add
 
     /**
@@ -109,9 +118,20 @@ public class DynamicArray {
      * position and return it.
      * 
      * @param index int position of element to remove
-     * @return String removed from array; null if position is not wihtin used range
+     * @return String removed from array; null if position is not within used range
      *         of the underlying array.
      */
+    public void add(String string) {
+        add(occupancy, string); //overload and adds elements to the end
+    } //overload method add
+//To be able to pull underlying[index] from Queue.java and Stack.java without calling private underlying from this class
+     public String get(int index) {
+        if(index < 0 || index >= occupancy){
+            return null;
+        }
+        return underlying[index];
+     } //Method get
+
     public String remove(int index) {
         // Initialize the return item
         String removed = null;
@@ -120,7 +140,7 @@ public class DynamicArray {
         if (this.occupancy > 0 && index > -1 && index < this.occupancy) {
             // Obtain the removed item
             removed = this.underlying[index];
-            // Shift everyting to the right of the removed item, one position to the left.
+            // Shift everything to the right of the removed item, one position to the left.
             for (int i = index; i < this.occupancy - 1; i++) {
                 this.underlying[i] = this.underlying[i + 1];
             }
